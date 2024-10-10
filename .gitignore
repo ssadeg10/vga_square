@@ -28,12 +28,12 @@
 *sopc_*
 
 # ignore Quartus II generated folders
-*/db/
-*/incremental_db/
-*/simulation/
-*/timing/
-*/testbench/
-*/*_sim/
-*/simulation/
-*/greybox_tmp/
-*/output_files/
+**/db/
+**/incremental_db/
+**/simulation/
+**/timing/
+**/testbench/
+**/*_sim/
+**/simulation/
+**/greybox_tmp/
+**/output_files/

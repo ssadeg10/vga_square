@@ -44,24 +44,80 @@ module vga_controller (
 	
 	// **** DRAW ****
 	
-	wire [3:0] paint_r, paint_g, paint_b;
-	vga_square # (
-		.SIZE (50),
-		.SQ_COLOR (12'hFFF), // hex triplet: RGB
-		.BG_COLOR (12'h137)
-	) draw_square (
+	// single static square
+//	wire [3:0] paint_r, paint_g, paint_b;
+//	vga_square # (
+//		.SIZE (50),
+//		.SQ_COLOR (12'hFFF), // hex triplet: RGB
+//		.BG_COLOR (12'h137)
+//	) draw_square (
+//		.sx (sx),
+//		.sy (sy),
+//		.paint_r (paint_r),
+//		.paint_g (paint_g),
+//		.paint_b (paint_b)
+//	);
+	
+	// single bouncing square
+//	wire [3:0] paint_r, paint_g, paint_b;
+//	vga_square_bounce square_1 (
+//		.clk (clk_vga),
+//		.sx (sx),
+//		.sy (sy),
+//		.paint_r (paint_r),
+//		.paint_g (paint_g),
+//		.paint_b (paint_b)
+//	);
+
+	// two bouncing squares with overlap
+	wire [3:0] paint_r1, paint_g1, paint_b1;
+	wire [3:0] paint_r2, paint_g2, paint_b2;
+	wire [9:0] pos1_x, pos1_y;
+	wire [9:0] pos2_x, pos2_y;
+	
+	vga_multisquare_bounce square_1 (
+		.clk (clk_vga),
 		.sx (sx),
 		.sy (sy),
-		.paint_r (paint_r),
-		.paint_g (paint_g),
-		.paint_b (paint_b)
+		.osq_x (pos2_x),
+		.osq_y (pos2_y),
+		.paint_r (paint_r1),
+		.paint_g (paint_g1),
+		.paint_b (paint_b1),
+		.pos_x (pos1_x),
+		.pos_y (pos1_y)
 	);
+	
+	vga_multisquare_bounce #(.START_X (200), .START_Y (400)) square_2 (
+		.clk (clk_vga),
+		.sx (sx),
+		.sy (sy),
+		.osq_x (pos1_x),
+		.osq_y (pos1_y),
+		.paint_r (paint_r2),
+		.paint_g (paint_g2),
+		.paint_b (paint_b2),
+		.pos_x (pos2_x),
+		.pos_y (pos2_y)
+	);
+	
+	wire [3:0] comb_r, comb_g, comb_b;
+	// white value is highest
+	assign comb_r = (paint_r1 == 4'hF && paint_r1 == paint_r2) 
+						? 4'h0 : ((paint_r1 > paint_r2) ? paint_r1 : paint_r2);
+	assign comb_g = (paint_g1 == 4'hF && paint_g1 == paint_g2) 
+						? 4'h0 : ((paint_g1 > paint_g2) ? paint_g1 : paint_g2);
+	assign comb_b = (paint_b1 == 4'hF && paint_b1 == paint_b2) 
+						? 4'h0 : ((paint_b1 > paint_b2) ? paint_b1 : paint_b2);
 	
 	//display color, display black in blanking interval
 	wire [3:0] display_r, display_g, display_b;
-	assign display_r = (de) ? paint_r : 4'h0;
-	assign display_g = (de) ? paint_g : 4'h0;
-	assign display_b = (de) ? paint_b : 4'h0;
+	assign display_r = (de) ? comb_r : 4'h0;
+	assign display_g = (de) ? comb_g : 4'h0;
+	assign display_b = (de) ? comb_b : 4'h0;
+//	assign display_r = (de) ? paint_r : 4'h0;
+//	assign display_g = (de) ? paint_g : 4'h0;
+//	assign display_b = (de) ? paint_b : 4'h0;
 	
 	// send vga output
 	always @(posedge clk_vga) begin
