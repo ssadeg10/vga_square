@@ -69,7 +69,7 @@ module vga_controller (
 //		.paint_b (paint_b)
 //	);
 
-	// two bouncing squares with overlap
+	// two bouncing squares with collision
 	wire [3:0] paint_r1, paint_g1, paint_b1;
 	wire [3:0] paint_r2, paint_g2, paint_b2;
 	wire [9:0] pos1_x, pos1_y;
@@ -102,13 +102,16 @@ module vga_controller (
 	);
 	
 	wire [3:0] comb_r, comb_g, comb_b;
-	// white value is highest
-	assign comb_r = (paint_r1 == 4'hF && paint_r1 == paint_r2) 
-						? 4'h0 : ((paint_r1 > paint_r2) ? paint_r1 : paint_r2);
-	assign comb_g = (paint_g1 == 4'hF && paint_g1 == paint_g2) 
-						? 4'h0 : ((paint_g1 > paint_g2) ? paint_g1 : paint_g2);
-	assign comb_b = (paint_b1 == 4'hF && paint_b1 == paint_b2) 
-						? 4'h0 : ((paint_b1 > paint_b2) ? paint_b1 : paint_b2);
+	// overlap: white value is highest
+//	assign comb_r = (paint_r1 == 4'hF && paint_r1 == paint_r2) 
+//						? 4'h0 : ((paint_r1 > paint_r2) ? paint_r1 : paint_r2);
+//	assign comb_g = (paint_g1 == 4'hF && paint_g1 == paint_g2) 
+//						? 4'h0 : ((paint_g1 > paint_g2) ? paint_g1 : paint_g2);
+//	assign comb_b = (paint_b1 == 4'hF && paint_b1 == paint_b2) 
+//						? 4'h0 : ((paint_b1 > paint_b2) ? paint_b1 : paint_b2);
+	assign comb_r = (paint_r1 > paint_r2) ? paint_r1 : paint_r2;
+	assign comb_g = (paint_g1 > paint_g2) ? paint_g1 : paint_g2;
+	assign comb_b = (paint_b1 > paint_b2) ? paint_b1 : paint_b2;
 	
 	//display color, display black in blanking interval
 	wire [3:0] display_r, display_g, display_b;
